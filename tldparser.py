@@ -61,8 +61,19 @@ class TblFileMaker:
         self.regexp_comp = re.compile(self.csv_regexp)
         self.read_file_lines = []
         self.parameters_to_save = []
+        self.aminoacid_sequence = []
         self.noecsv_fname = noecsv_fname
         self.restwrite_fname = restwrite_fname
+        self.sequence_fname = sequence_fname
+
+    def read_sequence(self):
+        with open(self.sequence_fname, 'r') as f:
+            for line in f:
+                for aa in line.strip().split(' '):
+                    if any(aa == '', aa == ' ', aa is None):
+                        raise ValueError('The file does have a'+\ 
+                                         'bad structure, check it')
+                    self.aminoacid_sequence.append(aa)
 
     def read_noecsv(self):
         with open(self.noecsv_fname, 'r') as csvfile:
