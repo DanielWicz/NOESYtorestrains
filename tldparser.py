@@ -33,6 +33,28 @@ class TblFileMaker:
     def __init__(self, noecsv_fname=None, restwrite_fname=None, sequence_fname=None):
         # The values are d, d_minus, d_plus range: (d - d_minus, d + d_plus)
         self.basedict = {'w': [4.0, 2.2, 1.1], 'm': [3.0, 1.2, 0.5], 's': [2.5, 0.7, 0.4]}
+        self.forcefield_types = {'ALA': ['HN', 'HA', 'HB1', 'HB2', 'HB3'],
+                                 'ARG': [],
+                                 'ASN': [],
+                                 'ASP': [],
+                                 'CYS': [],
+                                 'GLU': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2'],
+                                 'GLN': [],
+                                 'GLY': ['HN', 'HA1', 'HA2'],
+                                 'HIS': [],
+                                 'ILE': ['HN', 'HG11', 'HG12', 'HG21', 'HG22', 'HG23', 'HD11', 'HD12', 'HD13'],
+                                 'LEU': [],
+                                 'LYS': [],
+                                 'MET': [],
+                                 'PHE': [],
+                                 'PRO': [],
+                                 'SER': [],
+                                 'THR': [],
+                                 'TRP': [],
+                                 'TYR': ['HN', 'HA', 'HB1', 'HB2'],
+                                 'VAL': [],
+                                 'CPC': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21', 'HG22', 'HD1', 'HD2'],
+                                 'ACE': ['H1', 'H2', 'H3']}
 
         self.basestring = 'assign (resid {0} and name {1})(resid {2} and name {3}) {4} {5} {6}'
         self.csv_regexp = '([A-Z]+)([0-9]+)\ *[\–\-]\ *([A-Z]+)([0-9]+)'
