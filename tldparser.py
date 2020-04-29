@@ -25,15 +25,20 @@ class TblFileMaker:
         noecsv_fname: It is a filename for the csv file with assigned
                       NOESY signals.
         restwrite_fname: It is a filename for restrains file written by the class.
+        sequence_fname: It is a filename for file with three letter sequence (e.g. 
+                        ALA ARG ASN ASP ...).
 
     """
-    def __init__(self, noecsv_fname=None, restwrite_fname=None):
+
+    def __init__(self, noecsv_fname=None, restwrite_fname=None, sequence_fname=None):
         # The values are d, d_minus, d_plus range: (d - d_minus, d + d_plus)
         self.basedict = {'w': [4.0, 2.2, 1.1], 'm': [3.0, 1.2, 0.5], 's': [2.5, 0.7, 0.4]}
+
         self.basestring = 'assign (resid {0} and name {1})(resid {2} and name {3}) {4} {5} {6}'
         self.csv_regexp = '([A-Z]+)([0-9]+)\ *[\–\-]\ *([A-Z]+)([0-9]+)'
         self.regexp_comp = re.compile(self.csv_regexp)
-        self.read_file_lines = [] 
+        self.read_file_lines = []
+        self.parameters_to_save = []
         self.noecsv_fname = noecsv_fname
         self.restwrite_fname = restwrite_fname
 
@@ -45,19 +50,64 @@ class TblFileMaker:
                 strength = row[keys[1]]
                 d, d_min, d_plus = self.basedict[strength]
                 matched = self.regexp_comp.match(row[keys[0]])
-                line_to_save = self.basestring.format(matched.group(2),
-                                                      matched.group(1),
-                                                      matched.group(4),
-                                                      matched.group(3),
-                                                      d, d_min, d_plus)
-                self.read_file_lines.append(line_to_save)
+                # It is going as fallows:
+                #    group(2) is name of the residue that belongs
+                #    to firsts paired atom
+                #    group(1) is first atom name that is paired with a
+                #    second atom
+                #    group(4) is name of the residue that belongs
+                #    to second paired atom
+                #    group(3) is second atom name that is paired
+                #    with the first atom
+                #    d, d_min, d_plus were described previously.
+                self.parameters_to_save.append(matched.group(2),
+                                               matched.group(1),
+                                               matched.group(4),
+                                               matched.group(3),
+                                               d, d_min, d_plus)
 
+    def atom_to_forcefield(self, atom_name=None, aminoacid=None):
+        """For given atom and residue name, returns all possible
+           force field atom names from the topology file
+           Arguments:
+               atom_name: atom name passed to the function from
+                          the csv file/distance restrain entry list.
+               aminoacid: One aminoacid that corresponds to 
+                          the atom.
+           Returns: List of atom names for corresponding aminoacid.
+        """
+        pass
+
+    def distance_restrain_pairs(self, entry_pair=None, aminoacid=None):
+        """Returns list of distance restrains for given distance restrain entry.
+           
+           Arguments:
+               entry_pair: One distance restrain entry with its residue numbers
+                          , distances, atom names. So one
+                          entry of the self.parameters_to_save
+                          field.
+               aminoacid: One aminoacid that corresponds to the entry.
+           Returns: List of distance restrains for the given distance entry.
+        """
+        pass
+           
+    def restrain_postprocess(self):
+        """Post processes generated distance restrains, by
+           replacing atom names with force field names and
+           if there is several possibilities (due to equivalent
+           hydrogens) for restrains, then generates few distance 
+           restrains as a list.
+
+           Arguments:
+               None
+           Returns: List of distance restrains.
+        """
+       pass 
 
     def save_tbl(self):
         with open(self.restwrite_fname, 'w') as f:
             whole_tbl = '\n'.join(self.read_file_lines)
             f.write(whole_tbl)
-
 
 if __name__ == '__main__':
     tblmaker = TblFileMaker(noecsv_fname='noe.csv', restwrite_fname='protein.tbl')
