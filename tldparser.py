@@ -138,7 +138,19 @@ class TblFileMaker:
                None
            Returns: List of distance restrains.
         """
-        pass
+        
+        repeated_entries = []
+        for entry in self.parameters_to_save:
+            distance_restrains_pairs = self.distance_restrain_pairs(entry_pair=entry)
+            if distance_restrains_pairs == []:
+                continue
+            repeated_entries.append(distance_restrains_pairs)
+        # Generate tuples of protein restrains
+        protein_restrains = product(*repeated_entries)
+        
+        return protein_restrains
+
+
 
     def save_tbl(self):
         with open(self.restwrite_fname, 'w') as f:
