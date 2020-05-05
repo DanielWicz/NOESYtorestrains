@@ -34,26 +34,29 @@ class TblFileMaker:
     def __init__(self, noecsv_fname=None, restwrite_fname=None, sequence_fname=None):
         # The values are d, d_minus, d_plus range: (d - d_minus, d + d_plus)
         self.basedict = {'w': [4.0, 2.2, 1.1], 'm': [3.0, 1.2, 0.5], 's': [2.5, 0.7, 0.4]}
+        # Selecting force field types by hydrogen force field name has a small ambiguity
+        # e.g. hydrogens HE1 and HE2 in hystidyne are for carbon and nitrogen aswell
+        # It should be implemented with a dictionary of carbon types (CG: [hydrogen type ...] or other way.
         self.forcefield_types = {'ALA': ['HN', 'HA', 'HB1rot', 'HB2rot', 'HB3rot'],
-                                 'ARG': [],
-                                 'ASN': [],
-                                 'ASP': [],
-                                 'CYS': [],
+                                 'ARG': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HH11', 'HH12', 'HH21', 'HH22'],
+                                 'ASN': ['HN', 'HA', 'HB1', 'HB2', 'HD21', 'HD22'],
+                                 'ASP': ['HN', 'HA', 'HB1', 'HB2'],
+                                 'CYS': ['HN', 'HA', 'HB1', 'HB2', 'HG'],
                                  'GLU': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2'],
-                                 'GLN': [],
+                                 'GLN': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HH21', 'HH22'],
                                  'GLY': ['HN', 'HA1', 'HA2'],
-                                 'HIS': [],
+                                 'HIS': ['HN', 'HA', 'HB1', 'HB2', 'HD1', 'HD2', 'HE1', 'HE2'],
                                  'ILE': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21rot', 'HG22rot', 'HG23rot', 'HD11rot', 'HD12rot', 'HD13rot'],
-                                 'LEU': [],
-                                 'LYS': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ1rot', 'HZ2rot', 'HZ3rot'],
-                                 'MET': [],
-                                 'PHE': [],
-                                 'PRO': [],
-                                 'SER': [],
-                                 'THR': [],
+                                 'LEU': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21rot', 'HG22rot', 'HG23rot', 'HD11rot', 'HD12rot', 'HD13rot'],
+                                 'LYS': ['HN', 'HA', 'HB1', 'HB2', 'HG', 'HD11rot', 'HD12rot', 'HD13rot', 'HD21rot', 'HD22rot', 'HD23rot'],
+                                 'MET': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HE1rot', 'HE2rot', 'HE3rot'],
+                                 'PHE': ['HN', 'HA', 'HB1', 'HB2', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ'],
+                                 'PRO': ['HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HD1', 'HD2'],
+                                 'SER': ['HN', 'HA', 'HB1', 'HB2', 'HG'],
+                                 'THR': ['HN', 'HA', 'HB', 'HG1', 'HG21rot', 'HG22rot', 'HG23rot'],
                                  'TRP': ['HN', 'HA', 'HB1', 'HB2', 'HD1', 'HE1', 'HE3', 'HZ2', 'HZ3', 'HH2'],
                                  'TYR': ['HN', 'HA', 'HB1', 'HB2', 'HD1', 'HD2', 'HE1', 'HE2', 'HH'],
-                                 'VAL': [],
+                                 'VAL': ['HN', 'HA', 'HB', 'HG11rot', 'HG12rot', 'HG13rot', 'HG21rot', 'HG22rot', 'HG23rot'],
                                  'CPC': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21', 'HG22', 'HD1', 'HD2'],
                                  'ACE': ['HA1rot', 'HA2rot', 'HA3rot']}
 
@@ -102,15 +105,38 @@ class TblFileMaker:
 
     def atom_to_forcefield(self, atom_name=None, aminoacid=None):
         """For given atom and residue name, returns all possible
-           force field atom names from the topology file
+           force field atom names from the topology file and
+           considers rotation of the hydrogens around a bond,
+           if all of them were marked as rot in the force field
+           dictionary.
            Arguments:
                atom_name: atom name passed to the function from
                           the csv file/distance restrain entry list.
                aminoacid: One aminoacid that corresponds to 
                           the atom.
-           Returns: List of atom names for corresponding aminoacid.
+           Returns: List of atom names for corresponding aminoacid together
+                    with rotatory mark, indicating if given hydrogens
+                    are structurally equivalent..
         """
-        pass 
+        ff_types_for_aa = self.forcefield_types[aminoacid]
+        regexp = re.compile('([A-Z]+)([0-9]*)(rot)?')
+        atom_names_list = []
+        for ff_type_for_atom in ff_types_for_aa:
+            matched = regexp.match(ff_type_for_atom)
+            ff_atom_name = matched.group(1)
+            ff_atom_num = matched.group(2)
+            ff_atom_rot = matched.group(3)
+            if ff_atom_rot == 'rot':
+                rotational = True
+            else:
+                rotational = False
+            if ff_atom_name == atom_name:
+                if ff_atom_num != '':
+                    atom_names_list.append((ff_atom_name+str(ff_atom_num), rotational))
+                else:
+                    atom_names_list.append((ff_atom_name, rotational))
+
+        return atom_names_list
 
     def distance_restrain_pairs(self, entry_pair=None):
         """Returns list of distance restrains for given distance restrain entry.
@@ -150,9 +176,6 @@ class TblFileMaker:
 
         return distance_restrains
 
-
-
-           
     def restrain_postprocess(self):
         """Post processes generated distance restrains, by
            replacing atom names with force field names and
@@ -175,8 +198,6 @@ class TblFileMaker:
         protein_restrains = product(*repeated_entries)
         
         return protein_restrains
-
-
 
     def save_tbl(self):
         with open(self.restwrite_fname, 'w') as f:
