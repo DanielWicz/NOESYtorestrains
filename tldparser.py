@@ -123,7 +123,33 @@ class TblFileMaker:
                aminoacid: One aminoacid that corresponds to the entry.
            Returns: List of distance restrains for the given distance entry.
         """
-        pass
+        res1, atom1, res2, atom2, d, d_min, d_max = entry_pair
+        atom1_f = self.atom_to_forcefield(atom_name=atom1,
+                                          aminoacid=self.aminoacid_sequence[res1-1])
+        atom2_f = self.atom_to_forcefield(atom_name=atom2,
+                                          aminoacid=self.aminoacid_sequence[res2-1])
+        rotational_i_1, rotational_i_2 = 0, 0
+        for atom1 in atom1_f:
+            if atom1[1]:
+                rotational_i_1 += 1
+        for atom2 in atom2_f:
+            if atom2[1]:
+                rotational_i_2 += 1
+        if rotational_i_1 == len(atom1_f):
+            atom1_f = [atom1_f[0]]
+        if rotational_i_2 == len(atom2_f):
+            atom2_f = [atom2_f[0]]
+        atom1_f_names_only = list(zip(*atom1_f))[0]
+        atom2_f_names_only = list(zip(*atom2_f))[0]
+        all_atom_pairs = list(product(atom1_f_names_only, atom2_f_names_only))
+        if all_atom_pairs == []:
+            return []
+        distance_restrains = []
+        for pair in all_atom_pairs:
+            distance_restrains.append((res1, pair[0], res2, pair[1], d, d_min, d_max))
+
+        return distance_restrains
+
 
 
            
