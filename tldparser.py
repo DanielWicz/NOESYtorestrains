@@ -1,5 +1,6 @@
 import csv
 import re
+import os
 from itertools import product
 
 class TblFileMaker:
@@ -199,13 +200,25 @@ class TblFileMaker:
         
         return protein_restrains
 
-    def save_tbl(self):
-        with open(self.restwrite_fname, 'w') as f:
-            whole_tbl = '\n'.join(self.read_file_lines)
-            f.write(whole_tbl)
+    def save_tbl(self, tbl_dir='tblfiles'):
+        try:
+            os.mkdir(tbl_dir)
+        except Exception as e:
+            print('Directory with name {} already exists'.format(tbl_dir))
+        else:
+            print('Directory with name {} was just created'.format(tbl_dir))
+        protein_restrains = self.restrain_postprocess()
+        for i, protein_restrain in enumerate(protein_restrains):
+            to_save_string_list = []
+            for x in protein_restrain:
+                to_save_string_list.append(self.basestring.format(*x))
+            with open('./'+tbl_dir+'/'+str(i)+'_'+self.restwrite_fname, 'w') as f:
+                whole_tbl = '\n'.join(to_save_string_list)
+                f.write(whole_tbl)
 
 if __name__ == '__main__':
     tblmaker = TblFileMaker(noecsv_fname='noe.csv', restwrite_fname='protein.tbl',
                             sequence_fname='sequence.seq')
     tblmaker.read_noecsv()
     tblmaker.read_sequence()
+    tblmaker.save_tbl()
