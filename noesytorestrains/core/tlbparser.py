@@ -1,7 +1,8 @@
 import csv
 import re
 import os
-from itertools import product
+from itertools import product, tee
+from cardinality import count, at_least
 
 class TblFileMaker:
     """A class that's pruporse is to create tbl restrain files from assigned
@@ -32,7 +33,7 @@ class TblFileMaker:
 
     """
 
-    def __init__(self, noecsv_fname=None, restwrite_fname=None, sequence_fname=None):
+    def __init__(self, noecsv_fname=None, restwrite_fname=None, sequence_fname=None, one_atom_max_limit=1):
         # The values are d, d_minus, d_plus range: (d - d_minus, d + d_plus)
         self.basedict = {'w': [4.0, 2.2, 1.1], 'm': [3.0, 1.2, 0.5], 's': [2.5, 0.7, 0.4]}
         # Selecting force field types by hydrogen force field name has a small ambiguity
@@ -71,6 +72,7 @@ class TblFileMaker:
         self.noecsv_fname = noecsv_fname
         self.restwrite_fname = restwrite_fname
         self.sequence_fname = sequence_fname
+        self.one_atom_max_limit = one_atom_max_limit
 
     def read_sequence(self):
         with open(self.sequence_fname, 'r') as f:
@@ -185,7 +187,11 @@ class TblFileMaker:
             atom2_f = [atom2_f[0]]
         atom1_f_names_only = list(zip(*atom1_f))[0]
         atom2_f_names_only = list(zip(*atom2_f))[0]
-        all_atom_pairs = list(product(atom1_f_names_only, atom2_f_names_only))
+        atom_product, atom_product_tee = tee(product(atom1_f_names_only, atom2_f_names_only))
+        if at_least(self.one_atom_max_limit + 1, atom_product_tee): 
+            print('possible pairs for aminoacids {0} and {1} exceeding {2}'.format(res1, res2, self.one_atom_max_limit))
+            return None
+        all_atom_pairs = list(atom_product)
         if all_atom_pairs == []:
             return []
         distance_restrains = []
@@ -209,11 +215,12 @@ class TblFileMaker:
         repeated_entries = []
         for entry in self.parameters_to_save:
             distance_restrains_pairs = self.distance_restrain_pairs(entry_pair=entry)
-            if distance_restrains_pairs == []:
+            if distance_restrains_pairs == [] or distance_restrains_pairs is None:
                 continue
             repeated_entries.append(distance_restrains_pairs)
         # Generate tuples of protein restrains
-        protein_restrains = product(*repeated_entries)
+        protein_restrains, protein_restrains_tee = tee(product(*repeated_entries))
+        print('Number of files to save is: {0}'.format(count(protein_restrains_tee)))
         
         return protein_restrains
 
@@ -224,6 +231,7 @@ class TblFileMaker:
             print('Directory with name {} already exists'.format(tbl_dir))
         else:
             print('Directory with name {} was just created'.format(tbl_dir))
+        print('Generating different combinations for files to save, if it is too long, kill the app')
         protein_restrains = self.restrain_postprocess()
         for i, protein_restrain in enumerate(protein_restrains):
             to_save_string_list = []
