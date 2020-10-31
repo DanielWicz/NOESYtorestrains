@@ -62,7 +62,7 @@ class TblFileMaker:
                                  'ACE': ['HA1rot', 'HA2rot', 'HA3rot']}
 
         self.basestring = 'assign (resid {0} and name {1})(resid {2} and name {3}) {4} {5} {6}'
-        self.csv_regexp = '([0-9]+)([A-Z]+)([0-9]?)\ *[\–\-]\ *([0-9]+)([A-Z]+)([0-9]?)'
+        self.csv_regexp = '([0-9]+)([A-Z]+)([0-9]*)\ *[\–\-]\ *([0-9]+)([A-Z]+)([0-9]*)'
         self.regexp_comp = re.compile(self.csv_regexp)
         self.read_file_lines = []
         self.parameters_to_save = []
@@ -142,8 +142,10 @@ class TblFileMaker:
                 rotational = True
             else:
                 rotational = False
-            if atom_num is not None:
-                if atom_num != ff_atom_num:
+            if atom_num is not None and ff_atom_num is not None:
+                if atom_num != ff_atom_num and len(str(atom_num)) == len(str(ff_atom_num)):
+                    continue
+                elif int(str(atom_num)[0]) != int(str(ff_atom_num)[0]):
                     continue
             if ff_atom_name == atom_name:
                 if ff_atom_num is not None:
