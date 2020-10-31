@@ -62,7 +62,7 @@ class TblFileMaker:
                                  'ACE': ['HA1rot', 'HA2rot', 'HA3rot']}
 
         self.basestring = 'assign (resid {0} and name {1})(resid {2} and name {3}) {4} {5} {6}'
-        self.csv_regexp = '([0-9]?)([A-Z]+)([0-9]+)\ *[\–\-]\ *([0-9]?)([A-Z]+)([0-9]+)'
+        self.csv_regexp = '([0-9]+)([A-Z]+)([0-9]?)\ *[\–\-]\ *([0-9]+)([A-Z]+)([0-9]?)'
         self.regexp_comp = re.compile(self.csv_regexp)
         self.read_file_lines = []
         self.parameters_to_save = []
@@ -89,21 +89,21 @@ class TblFileMaker:
                 d, d_min, d_plus = self.basedict[strength]
                 matched = self.regexp_comp.match(row[keys[0]])
                 # It is going as fallows:
-                #    group(3) is name of the residue that belongs
+                #    group(1) is name of the residue that belongs
                 #    to firsts paired atom
                 #    group(2) is first atom name that is paired with a
                 #    second atom
-                #    group(6) is name of the residue that belongs
+                #    group(3) is name of the residue that belongs
                 #    to second paired atom
                 #    group(5) is second atom name that is paired
                 #    with the first atom
                 #    d, d_min, d_plus were described previously.
-                self.parameters_to_save.append((int(matched.group(3)),
+                self.parameters_to_save.append((int(matched.group(1)),
                                                matched.group(2),
-                                               self.to_int_else_none(matched.group(1)),
-                                               int(matched.group(6)),
+                                               self.to_int_else_none(matched.group(3)),
+                                               int(matched.group(4)),
                                                matched.group(5),
-                                               self.to_int_else_none(matched.group(4)),
+                                               self.to_int_else_none(matched.group(6)),
                                                float(d), float(d_min), float(d_plus)))
 
     def to_int_else_none(self, str_to_int):
