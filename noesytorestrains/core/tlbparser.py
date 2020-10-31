@@ -49,7 +49,7 @@ class TblFileMaker:
                                  'HIS': ['HN', 'HA', 'HB1', 'HB2', 'HD1', 'HD2', 'HE1', 'HE2'],
                                  'ILE': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21rot', 'HG22rot', 'HG23rot', 'HD11rot', 'HD12rot', 'HD13rot'],
                                  'LEU': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21rot', 'HG22rot', 'HG23rot', 'HD11rot', 'HD12rot', 'HD13rot'],
-                                 'LYS': ['HN', 'HA', 'HB1', 'HB2', 'HG', 'HD11rot', 'HD12rot', 'HD13rot', 'HD21rot', 'HD22rot', 'HD23rot'],
+                                 'LYS': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ11rot', 'HZ12rot', 'HZ13rot'],
                                  'MET': ['HN', 'HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HE1rot', 'HE2rot', 'HE3rot'],
                                  'PHE': ['HN', 'HA', 'HB1', 'HB2', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ'],
                                  'PRO': ['HA', 'HB1', 'HB2', 'HG1', 'HG2', 'HD1', 'HD2'],
@@ -59,6 +59,7 @@ class TblFileMaker:
                                  'TYR': ['HN', 'HA', 'HB1', 'HB2', 'HD1', 'HD2', 'HE1', 'HE2', 'HH'],
                                  'VAL': ['HN', 'HA', 'HB', 'HG11rot', 'HG12rot', 'HG13rot', 'HG21rot', 'HG22rot', 'HG23rot'],
                                  'CPC': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21', 'HG22', 'HD1', 'HD2'],
+                                 'TPC': ['HN', 'HA', 'HB', 'HG11', 'HG12', 'HG21', 'HG22', 'HD1', 'HD2'],
                                  'ACE': ['HA1rot', 'HA2rot', 'HA3rot']}
 
         self.basestring = 'assign (resid {0} and name {1})(resid {2} and name {3}) {4} {5} {6}'
