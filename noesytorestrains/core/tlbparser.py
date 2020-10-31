@@ -62,7 +62,7 @@ class TblFileMaker:
                                  'ACE': ['HA1rot', 'HA2rot', 'HA3rot']}
 
         self.basestring = 'assign (resid {0} and name {1})(resid {2} and name {3}) {4} {5} {6}'
-        self.csv_regexp = '([A-Z]+)([0-9]+)\ *[\–\-]\ *([A-Z]+)([0-9]+)'
+        self.csv_regexp = '([0-9]?)([A-Z]+)([0-9]+)\ *[\–\-]\ *([0-9]?)([A-Z]+)([0-9]+)'
         self.regexp_comp = re.compile(self.csv_regexp)
         self.read_file_lines = []
         self.parameters_to_save = []
@@ -89,22 +89,33 @@ class TblFileMaker:
                 d, d_min, d_plus = self.basedict[strength]
                 matched = self.regexp_comp.match(row[keys[0]])
                 # It is going as fallows:
-                #    group(2) is name of the residue that belongs
+                #    group(3) is name of the residue that belongs
                 #    to firsts paired atom
-                #    group(1) is first atom name that is paired with a
+                #    group(2) is first atom name that is paired with a
                 #    second atom
-                #    group(4) is name of the residue that belongs
+                #    group(6) is name of the residue that belongs
                 #    to second paired atom
-                #    group(3) is second atom name that is paired
+                #    group(5) is second atom name that is paired
                 #    with the first atom
                 #    d, d_min, d_plus were described previously.
-                self.parameters_to_save.append((int(matched.group(2)),
-                                               matched.group(1),
-                                               int(matched.group(4)),
-                                               matched.group(3),
+                self.parameters_to_save.append((int(matched.group(3)),
+                                               matched.group(2),
+                                               self.to_int_else_none(matched.group(1)),
+                                               int(matched.group(6)),
+                                               matched.group(5),
+                                               self.to_int_else_none(matched.group(4)),
                                                float(d), float(d_min), float(d_plus)))
 
-    def atom_to_forcefield(self, atom_name=None, aminoacid=None):
+    def to_int_else_none(self, str_to_int):
+        try:
+            number = int(str_to_int)
+        except:
+            number = None
+
+        return number
+
+    def atom_to_forcefield(self, atom_name=None, aminoacid=None,
+                           atom_num=None):
         """For given atom and residue name, returns all possible
            force field atom names from the topology file and
            considers rotation of the hydrogens around a bond,
@@ -125,14 +136,17 @@ class TblFileMaker:
         for ff_type_for_atom in ff_types_for_aa:
             matched = regexp.match(ff_type_for_atom)
             ff_atom_name = matched.group(1)
-            ff_atom_num = matched.group(2)
+            ff_atom_num = self.to_int_else_none(matched.group(2))
             ff_atom_rot = matched.group(3)
             if ff_atom_rot == 'rot':
                 rotational = True
             else:
                 rotational = False
+            if atom_num is not None:
+                if atom_num != ff_atom_num:
+                    continue
             if ff_atom_name == atom_name:
-                if ff_atom_num != '':
+                if ff_atom_num is not None:
                     atom_names_list.append((ff_atom_name+str(ff_atom_num), rotational))
                 else:
                     atom_names_list.append((ff_atom_name, rotational))
@@ -150,10 +164,10 @@ class TblFileMaker:
                aminoacid: One aminoacid that corresponds to the entry.
            Returns: List of distance restrains for the given distance entry.
         """
-        res1, atom1, res2, atom2, d, d_min, d_max = entry_pair
-        atom1_f = self.atom_to_forcefield(atom_name=atom1,
+        res1, atom1, atomnum1, res2, atom2, atomnum2, d, d_min, d_max = entry_pair
+        atom1_f = self.atom_to_forcefield(atom_name=atom1, atom_num=atomnum1,
                                           aminoacid=self.aminoacid_sequence[res1-1])
-        atom2_f = self.atom_to_forcefield(atom_name=atom2,
+        atom2_f = self.atom_to_forcefield(atom_name=atom2, atom_num=atomnum2,
                                           aminoacid=self.aminoacid_sequence[res2-1])
         rotational_i_1, rotational_i_2 = 0, 0
         for atom1 in atom1_f:
