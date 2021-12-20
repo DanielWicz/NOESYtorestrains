@@ -6,30 +6,52 @@ from cardinality import count, at_least
 
 class TblFileMaker:
     """A class that's pruporse is to create tbl restrain files from assigned
-       NOESY signals. The assigment is saved into a csv file with a format shown
+       NOESY signals. The assigment is read from a csv file with a format shown
        below:
            HydrogenPair,AssignedNOESYIntensity
            NH1 - NH2,m
            NH2 - NH5,s
            NH7 - NH1,w
+       
        To use the class you've to create its object instance with 
-       two arguments `noecsv_fname` and `restwrite_fname` as in 
+       two arguments `noecsv_fname`, `sequence_fname` and `restwrite_fname` as in 
        the example below:
        
        ```python
        from NOESYtorestrains import TblFileMaker
 
        tblfm = TblFileMaker(noecsv_fname='noe.csv',
-                            restwrite_fname='rest.tbl')
+                            restwrite_fname='rest.tbl',
+                            sequence_fname='sequence.seq')
        tblfm.read_noecsv()
        tblfm.save_tbl()
     ```
+    The only files needed to exist are sequence file and csv file. The tbl file
+    is provided by the program.
     Arguments:
         noecsv_fname: It is a filename for the csv file with assigned
-                      NOESY signals.
+                      NOESY signals. The CSV is arranged in the fallowing way:
+                      `hydrogen, intensity
+                       1HA - 2HN,s
+                       2HA - 3HN,s
+                       2HB - 3HN,w
+                       3HA - 4HN,s
+                       3HB - 4HN,m
+                       3HG1 - 4HN,m
+                       4HG12 - 5HN,w`
+                       Where s, m, w are acronyms for strong, medium, weak intensities. 
+
         restwrite_fname: It is a filename for restrains file written by the class.
+                         The file is going to be written in the fallowing format:
+                         `assign (resid 2 and name HN)(resid 1 and name HA) 2.5 0.7 0.4 
+                          assign (resid 3 and name HN)(resid 2 and name HA) 3.0 1.2 0.5 
+                          assign (resid 4 and name HN)(resid 3 and name HA) 4.0 2.2 1.1`
+                          for every restrain interaction based on the CSV and the sequence file.
         sequence_fname: It is a filename for file with three letter sequence (e.g. 
                         ALA ARG ASN ASP ...).
+        one_atom_max_limit: How many combinations to calculate per atom. If you have ambigious restrains (restrains with respect
+                            to hydrogen atoms, that can be assigned in various ways), then the number of different combinations
+                            goes as factorial of n (n!).
 
     """
 
