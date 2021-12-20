@@ -17,7 +17,7 @@
 ### Example
 
 ```
-   from NOESYtorestrains import TblFileMaker
+   from noesytorestrains import TblFileMaker
 
    tblfm = TblFileMaker(noecsv_fname='noe.csv',
                         restwrite_fname='rest.tbl',
@@ -28,3 +28,7 @@
 
 ### Usage 
 The script is used as it is, imported directly from the directory, where the repository was cloned into.
+
+### Requipments
+- Python 3.5 or above
+- Cardinality package (`https://pypi.org/project/cardinality/`)
