@@ -61,7 +61,7 @@ class TblFileMaker:
         noecsv_fname=None,
         restwrite_fname=None,
         sequence_fname=None,
-        one_atom_max_limit=1,
+        one_atom_max_limit=3,
     ):
         # The values are d, d_minus, d_plus range: (d - d_minus, d + d_plus)
         # The values can be changed, depending on the definition of the weak, medium and strong interactions
