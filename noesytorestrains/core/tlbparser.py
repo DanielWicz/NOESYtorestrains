@@ -64,11 +64,14 @@ class TblFileMaker:
         one_atom_max_limit=1,
     ):
         # The values are d, d_minus, d_plus range: (d - d_minus, d + d_plus)
+        # The values can be changed, depending on the definition of the weak, medium and strong interactions
         self.basedict = {
             "w": [4.0, 2.2, 1.1],
             "m": [3.0, 1.2, 0.5],
             "s": [2.5, 0.7, 0.4],
         }
+        # The names are based on the XPLOR force field
+        # The names can be altered or new aminoacids can be added in the future
         # Selecting force field types by hydrogen force field name has a small ambiguity
         # e.g. hydrogens HE1 and HE2 in hystidyne are for carbon and nitrogen aswell
         # It should be implemented with a dictionary of carbon types (CG: [hydrogen type ...] or other way.
